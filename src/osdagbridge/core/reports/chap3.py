@@ -5,6 +5,7 @@
 
 from osdagbridge.core.utils.common import (
     KEY_CB_LOAD,
+    KEY_FOOTPATH,
     KEY_LL_CUSTOM_VEHICLES,
     KEY_LL_FOOTPATH_PRESSURE_MODE,
     KEY_LL_FOOTPATH_PRESSURE_VALUE,
@@ -86,6 +87,31 @@ def ch3_loads(input_dict):
     vehicles_str = ", ".join(vehicles) if vehicles else "None"
 
     from osdagbridge.core.utils.codes.irc6_2017 import IRC6_2017
+
+        # One row per selected vehicle for the Vehicular Live Load table
+    try:
+        span_for_im = float(input_dict.get(KEY_SPAN))
+    except (TypeError, ValueError):
+        span_for_im = None
+
+    def _vehicle_impact(name):
+        if span_for_im is None:
+            return "N/A", "---"
+        if name == "Class A":
+            im = IRC6_2017.cl_208_2_impact_factor(span_for_im)
+            return f"{1.0 + im:.3f}", "IRC 6 Cl. 208.2"
+        if name.startswith("Class 70R") or name.startswith("Class AA"):
+            im = IRC6_2017.cl_208_3_impact_factor(span_for_im)
+            return f"{1.0 + im:.3f}", "IRC 6 Cl. 208.3"
+        return "N/A", "---"
+
+    vehicle_rows = []
+    for name in vehicles:
+        factor, ref = _vehicle_impact(name)
+        vehicle_rows.append(_tex(name) + " & " + factor + " & " + ref + r" \\[6pt]" + "\n" + r"\hline")
+    if not vehicle_rows:
+        vehicle_rows.append(r"No vehicle selected & --- & --- \\[6pt]" + "\n" + r"\hline")
+    vehicle_rows_str = "\n".join(vehicle_rows)
     span = input_dict.get(KEY_SPAN)
     impact_factor_str = ""
     if span not in (None, ""):
@@ -130,6 +156,14 @@ def ch3_loads(input_dict):
     else:
         braking_force_str = "N/A"
 
+        # Values for the Associated Live Load Effects table
+    lanes_str = str(lanes) if lanes not in (None, "") else "N/A"
+    braking_kn_str = "N/A"
+    if lanes not in (None, ""):
+        try:
+            braking_kn_str = f"{IRC6_2017.cl_211_2_braking_force(int(lanes)) * 9.81:.2f}"
+        except Exception:
+            braking_kn_str = "N/A"
     fp_mode  = input_dict.get(KEY_LL_FOOTPATH_PRESSURE_MODE, "")
     fp_value = input_dict.get(KEY_LL_FOOTPATH_PRESSURE_VALUE, "")
     if str(fp_mode).strip().lower() in ("as per irc 6", "as per irc6", "automatic"):
@@ -141,6 +175,40 @@ def ch3_loads(input_dict):
         fp_str = f"{fp_value} kN/m²"
     else:
         fp_str = "N/A"
+
+    # Values for the Footpath Live Load table
+    footpath = str(input_dict.get(KEY_FOOTPATH) or "None")
+    fp_load_str, fp_ref = "N/A", "---"
+    if str(fp_mode).strip().lower() in ("as per irc 6", "as per irc6", "automatic"):
+        try:
+            fp_load_str = f"{IRC6_2017.cl_206_1_footway_load():.3f}"
+            fp_ref = "IRC 6 Cl. 206.1"
+        except Exception:
+            pass
+    elif fp_value not in (None, ""):
+        fp_load_str = str(fp_value)
+        fp_ref = "User-defined"
+
+    if footpath.strip().lower() == "none":
+        footpath_block = r"\noindent\textit{Footpath Live Load: not applicable (no footpath selected).}"
+    else:
+        footpath_block = r"""\begin{longtable}{|L{5.0cm}|C{3.5cm}|C{2.0cm}|C{5.0cm}|}
+\caption{\textbf{Footpath Live Load}}\\
+\hline
+\textbf{Parameter} & \textbf{Value} & \textbf{Unit} & \textbf{Reference} \\[6pt]
+\hline
+\endfirsthead
+\hline
+\textbf{Parameter} & \textbf{Value} & \textbf{Unit} & \textbf{Reference} \\[6pt]
+\hline
+\endhead
+Footpath Provided & """ + _tex(footpath) + r""" & --- & --- \\[6pt]
+\hline
+Pressure Mode & """ + _tex(str(fp_mode or "N/A")) + r""" & --- & --- \\[6pt]
+\hline
+Footpath Live Load & """ + _tex(fp_load_str) + r""" & kN/m\textsuperscript{2} & """ + fp_ref + r""" \\[6pt]
+\hline
+\end{longtable}"""
 
     # Vz / Pz — prefer stored computed values; fall back to IRC6 Table 12
     vz_val = input_dict.get(KEY_WL_HOURLY_MEAN_WIND)
@@ -311,25 +379,40 @@ This section summarizes all loads applied to the bridge and the load combination
 \end{longtable}
 
 \vspace{1em}
-\begin{longtable}{|L{5.5cm}|p{10.0cm}|}
-\caption{\textbf{Live Loads (LL)}}
+\begin{longtable}{|L{6.0cm}|C{4.5cm}|C{5.0cm}|}
+\caption{\textbf{Vehicular Live Load (LL)}}\\
 \hline
-\textbf{parameter} & \textbf{value} \\
+\textbf{Vehicle Class} & \textbf{Impact Factor, $1 + I_M$} & \textbf{Reference} \\[6pt]
 \hline
 \endfirsthead
 \hline
-\textbf{parameter} & \textbf{value} \\
+\textbf{Vehicle Class} & \textbf{Impact Factor, $1 + I_M$} & \textbf{Reference} \\[6pt]
 \hline
 \endhead
-\textnormal{Vehicles Considered} & """ + _tex(vehicles_str) + r""" \\[6pt]
+""" + vehicle_rows_str + r"""
+\end{longtable}
+
+
+\vspace{1em}
+\begin{longtable}{|L{5.0cm}|C{3.5cm}|C{2.0cm}|C{5.0cm}|}
+\caption{\textbf{Associated Live Load Effects}}\\
 \hline
-\textnormal{Impact Factor (IRC 6)} & """ + _tex(impact_factor_str) + r""" \\[6pt]
+\textbf{Parameter} & \textbf{Value} & \textbf{Unit} & \textbf{Reference} \\[6pt]
 \hline
-\textnormal{Braking Load (IRC 6)} & """ + _tex(braking_force_str) + r""" \\[6pt]
+\endfirsthead
 \hline
-\textnormal{Footpath Live Load (if applicable)} & """ + (_render_value(input_dict, KEY_LL_FOOTPATH_PRESSURE_VALUE, ' kN/m\\textsuperscript{2}')) + r""" \\[6pt]
+\textbf{Parameter} & \textbf{Value} & \textbf{Unit} & \textbf{Reference} \\[6pt]
+\hline
+\endhead
+Number of Design Lanes & """ + _tex(lanes_str) + r""" & --- & --- \\[6pt]
+\hline
+Braking Force & """ + braking_kn_str + r""" & kN & IRC 6 Cl. 211.2 \\[6pt]
+\hline
+Centrifugal Force & Not applicable (straight bridge) & --- & IRC 6 Cl. 212 \\[6pt]
 \hline
 \end{longtable}
+\vspace{1em}
+""" + footpath_block + r"""
 
 \vspace{1em}
 \begin{longtable}{|L{5.5cm}|p{10.0cm}|}
@@ -428,5 +511,4 @@ This section summarizes all loads applied to the bridge and the load combination
 
 \noindent\textit{Note: All IRC 6 load combinations are auto-generated by OsdagBridge. User-defined custom combinations, if any, are appended.}
 """
-
 
