@@ -1,5 +1,19 @@
-def ch7_quantities(input_dict):
-    return r"""
+import os 
+
+def ch7_quantities(input_dict, chart_dir=None):
+          # Material quantity charts (Part 5) 
+        mat_figure = ""
+        if chart_dir:
+         from osdagbridge.core.reports.report_charts import material_quantity_chart
+        chart_path = material_quantity_chart(input_dict, os.path.join(chart_dir, "material_quantities.png"))
+        if chart_path:
+            mat_figure = (r"\begin{figure}[H]" + "\n" + r"\centering" + "\n"
+                          + r"\includegraphics[width=\textwidth]{" + chart_path.replace("\\", "/") + "}\n"
+                          + r"\caption{Material quantities: structural steel tonnage, and deck concrete volume vs reinforcement weight}" + "\n"
+                          + r"\end{figure}")
+
+        return r"""
+
 \chapter{Material Take-off \& Quantity Summary}
 \label{ch:material-takeoff}
 
@@ -30,6 +44,6 @@ def ch7_quantities(input_dict):
 \hline
 \end{longtable}
 \endgroup
-"""
+""" + mat_figure
 
 

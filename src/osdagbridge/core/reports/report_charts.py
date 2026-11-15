@@ -75,3 +75,60 @@ def ur_summary_chart(rows, out_path):
     fig.savefig(out_path, dpi=200)
     plt.close(fig)
     return out_path
+
+
+def material_quantity_chart(quantities, out_path):
+    """Save bar charts of steel tonnage and concrete vs reinforcement.
+
+    quantities: the Chapter 7 dict (values like "32.89" or "N.A.").
+    Returns out_path, or None when there is nothing to plot.
+    """
+    def _num(key):
+        return _to_float(quantities.get(key)) if quantities.get(key) not in (None, "N.A.") else None
+
+    girders = _num("steel_girders_wt_total")
+    bracing_parts = [_num(k) for k in ("bracing_top_wt_total", "bracing_bot_wt_total", "bracing_diag_wt_total")]
+    bracing = sum(v for v in bracing_parts if v is not None) if any(v is not None for v in bracing_parts) else None
+    concrete = _num("concrete_deck_vol_total")
+    rebar = _num("rebar_deck_wt_total")
+
+    if all(v is None for v in (girders, bracing, concrete, rebar)):
+        return None
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4.2))
+
+    # Left: structural steel tonnage
+    names = ["Girders", "Cross Bracing", "End Diaphragms"]
+    values = [girders, bracing, None]
+    shown = [v if v is not None else 0 for v in values]
+    bars = ax1.bar(names, shown, color="#7a9a01", width=0.55)
+    for bar, v in zip(bars, values):
+        label = f"{v:.2f}" if v is not None else "not in BOM"
+        ax1.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), label,
+                 ha="center", va="bottom", fontsize=8)
+    ax1.set_title("Structural Steel Tonnage", fontsize=11, fontweight="bold")
+    ax1.set_ylabel("Weight (MT)")
+    ax1.set_ylim(0, max(shown) * 1.2 if max(shown) > 0 else 1)
+    ax1.grid(axis="y", alpha=0.3)
+
+    # Right: concrete volume vs reinforcement weight (different units, separate axes)
+    ax2.set_title("Deck: Concrete vs Reinforcement", fontsize=11, fontweight="bold")
+    c_val = concrete if concrete is not None else 0
+    r_val = rebar if rebar is not None else 0
+    b1 = ax2.bar([0], [c_val], color="#8c8c8c", width=0.5)
+    ax2.set_ylabel("Concrete Volume (m³)")
+    ax2.set_ylim(0, c_val * 1.2 if c_val > 0 else 1)
+    ax2r = ax2.twinx()
+    b2 = ax2r.bar([1], [r_val], color="#b5651d", width=0.5)
+    ax2r.set_ylabel("Reinforcement Weight (MT)")
+    ax2r.set_ylim(0, r_val * 1.2 if r_val > 0 else 1)
+    ax2.set_xticks([0, 1])
+    ax2.set_xticklabels(["Concrete (m³)", "Reinforcement (MT)"])
+    ax2.text(0, c_val, f"{concrete:.2f} m³" if concrete is not None else "N.A.", ha="center", va="bottom", fontsize=8)
+    ax2r.text(1, r_val, f"{rebar:.2f} MT" if rebar is not None else "N.A.", ha="center", va="bottom", fontsize=8)
+    ax2.grid(axis="y", alpha=0.3)
+
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=200)
+    plt.close(fig)
+    return out_path
