@@ -6,6 +6,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from osdagbridge.core.reports import styles
+
 
 UR_GROUPS = [
     ("Steel Plate Girders", "Girder"),
@@ -59,7 +61,7 @@ def ur_summary_chart(rows, out_path):
         else:
             names = [p[0] for p in points]
             values = [p[1] for p in points]
-            colors = ["#c0392b" if v > 1.0 else "#7a9a01" for v in values]
+            colors = [styles.CHART_FAIL_COLOR if v > 1.0 else styles.CHART_PASS_COLOR for v in values]
             bars = ax.bar(range(len(values)), values, color=colors, width=0.6)
             ax.set_xticks(range(len(values)))
             ax.set_xticklabels(names, rotation=30, ha="right", fontsize=8)
@@ -67,12 +69,12 @@ def ur_summary_chart(rows, out_path):
             for bar, v in zip(bars, values):
                 ax.text(bar.get_x() + bar.get_width() / 2, v, f"{v:.2f}",
                         ha="center", va="bottom", fontsize=7)
-        ax.axhline(1.0, color="red", linestyle="--", linewidth=1.5, label="UR = 1.0")
+        ax.axhline(1.0, color=styles.CHART_LIMIT_LINE_COLOR, linestyle="--", linewidth=1.5, label="UR = 1.0")
         ax.legend(loc="upper right", fontsize=7)
         ax.grid(axis="y", alpha=0.3)
 
     fig.tight_layout()
-    fig.savefig(out_path, dpi=200)
+    fig.savefig(out_path, dpi=styles.CHART_DPI)
     plt.close(fig)
     return out_path
 
@@ -101,7 +103,7 @@ def material_quantity_chart(quantities, out_path):
     names = ["Girders", "Cross Bracing", "End Diaphragms"]
     values = [girders, bracing, None]
     shown = [v if v is not None else 0 for v in values]
-    bars = ax1.bar(names, shown, color="#7a9a01", width=0.55)
+    bars = ax1.bar(names, shown, color=styles.CHART_PASS_COLOR, width=0.55)
     for bar, v in zip(bars, values):
         label = f"{v:.2f}" if v is not None else "not in BOM"
         ax1.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), label,
@@ -115,11 +117,11 @@ def material_quantity_chart(quantities, out_path):
     ax2.set_title("Deck: Concrete vs Reinforcement", fontsize=11, fontweight="bold")
     c_val = concrete if concrete is not None else 0
     r_val = rebar if rebar is not None else 0
-    b1 = ax2.bar([0], [c_val], color="#8c8c8c", width=0.5)
+    b1 = ax2.bar([0], [c_val], color=styles.CHART_CONCRETE_COLOR, width=0.5)
     ax2.set_ylabel("Concrete Volume (m³)")
     ax2.set_ylim(0, c_val * 1.2 if c_val > 0 else 1)
     ax2r = ax2.twinx()
-    b2 = ax2r.bar([1], [r_val], color="#b5651d", width=0.5)
+    b2 = ax2r.bar([1], [r_val], color=styles.CHART_REBAR_COLOR, width=0.5)
     ax2r.set_ylabel("Reinforcement Weight (MT)")
     ax2r.set_ylim(0, r_val * 1.2 if r_val > 0 else 1)
     ax2.set_xticks([0, 1])
@@ -129,6 +131,6 @@ def material_quantity_chart(quantities, out_path):
     ax2.grid(axis="y", alpha=0.3)
 
     fig.tight_layout()
-    fig.savefig(out_path, dpi=200)
+    fig.savefig(out_path, dpi=styles.CHART_DPI)
     plt.close(fig)
     return out_path

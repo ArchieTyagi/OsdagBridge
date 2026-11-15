@@ -1,18 +1,18 @@
-import os 
+import os
+
+from osdagbridge.core.reports import styles
+
 
 def ch7_quantities(input_dict, chart_dir=None):
-          # Material quantity charts (Part 5) 
-        mat_figure = ""
-        if chart_dir:
-         from osdagbridge.core.reports.report_charts import material_quantity_chart
+    # Material quantity charts (Part 5)
+    mat_figure = ""
+    if chart_dir:
+        from osdagbridge.core.reports.report_charts import material_quantity_chart
         chart_path = material_quantity_chart(input_dict, os.path.join(chart_dir, "material_quantities.png"))
         if chart_path:
-            mat_figure = (r"\begin{figure}[H]" + "\n" + r"\centering" + "\n"
-                          + r"\includegraphics[width=\textwidth]{" + chart_path.replace("\\", "/") + "}\n"
-                          + r"\caption{Material quantities: structural steel tonnage, and deck concrete volume vs reinforcement weight}" + "\n"
-                          + r"\end{figure}")
+            mat_figure = styles.figure_tex(chart_path, "Material quantities: structural steel tonnage, and deck concrete volume vs reinforcement weight")
 
-        return r"""
+    return r"""
 
 \chapter{Material Take-off \& Quantity Summary}
 \label{ch:material-takeoff}
@@ -20,7 +20,7 @@ def ch7_quantities(input_dict, chart_dir=None):
 \noindent\textbf{Table 7.1  Bill of Materials (Steel, Concrete, and Reinforcement Quantities)}
 
 \begingroup
-\setlength{\tabcolsep}{3.5pt}
+\setlength{\tabcolsep}{\colsepcompact}
 \begin{longtable}{|C{1.0cm}|L{3.8cm}|C{2.6cm}|C{1.8cm}|C{1.8cm}|C{1.8cm}|C{1.8cm}|}
 \hline
 \textbf{S.N.} & \textbf{Item Description} & \textbf{Volume} & \textbf{Quantity} & \textbf{Total Volume} & \textbf{Weight (MT)} & \textbf{Total Weight (MT)} \\

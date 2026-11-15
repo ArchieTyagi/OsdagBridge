@@ -127,6 +127,7 @@ from .chap4 import ch4_analysis
 from .chap5 import ch5_design_checks
 from .chap6 import ch6_drawings
 from .chap7 import ch7_quantities
+from . import styles
 from .chap8 import ch8_design_log
 from .chap9 import references
 
@@ -153,10 +154,10 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
     rd = _tex(report_date)
     rv = _tex(report_version)
     return r"""
-\documentclass[12pt,a4paper]{report}
+\documentclass[""" + styles.FONT_SIZE + "," + styles.PAPER + r"""]{report}
 
 % Packages
-\usepackage[a4paper, top=1in, left=1in, right=1in, bottom=1.25in, headheight=18pt, footskip=0.55in]{geometry}
+""" + styles.geometry_tex() + r"""
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -193,26 +194,19 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
 \numberwithin{table}{chapter}
 \numberwithin{figure}{chapter}
 % Table layout and spacing: consistent padding, row height, and longtable pre/post skips
-\setlength{\tabcolsep}{6pt}
-\renewcommand{\arraystretch}{1.12}
-\setlength{\LTpre}{0pt}
-\setlength{\LTpost}{6pt}
-% Table rules (outline thickness) and small extra row height for clarity
-\setlength{\arrayrulewidth}{0.5pt}
-\setlength{\extrarowheight}{0.6pt}
-
+""" + styles.table_settings_tex() + r"""
 % Prevent tables from overflowing past the page bottom:
 % if fewer than 5 baseline-skips remain, break to the next page first.
 \BeforeBeginEnvironment{table}{\needspace{5\baselineskip}}
 \BeforeBeginEnvironment{longtable}{\needspace{5\baselineskip}}
 
-\definecolor{osdagGreen}{HTML}{91B014}
+""" + styles.colors_tex() + r"""
 
 \fancypagestyle{main}{
   \fancyhf{}
   \fancyhead[L]{""" + pn + r""" $|$ """ + jn + r"""}
   \fancyhead[R]{""" + rd + r""" $|$ """ + rv + r"""}
-  \fancyfoot[L]{Osdag $|$ FOSSEE $|$ Indian Institute of Technology Bombay}
+   \fancyfoot[L]{""" + styles.FOOTER_LEFT_TEXT + r"""}
   \fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
   \renewcommand{\headrule}{\color{osdagGreen}\hrule width\headwidth height 1pt \vspace{2pt}}
   \renewcommand{\footrule}{%
@@ -230,7 +224,7 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
   \fancyhf{}
   \fancyhead[L]{""" + pn + r""" $|$ """ + jn + r"""}
   \fancyhead[R]{""" + rd + r""" $|$ """ + rv + r"""}
-  \fancyfoot[L]{Osdag $|$ FOSSEE $|$ Indian Institute of Technology Bombay}
+  \fancyfoot[L]{""" + styles.FOOTER_LEFT_TEXT + r"""}
   \fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
   \renewcommand{\headrule}{\color{osdagGreen}\hrule width\headwidth height 1pt \vspace{2pt}}
   \renewcommand{\footrule}{%
@@ -247,12 +241,12 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
 \fancypagestyle{firstpage}{
   \fancyhf{}
   \renewcommand{\headrulewidth}{0pt}
-  \fancyfoot[L]{Osdag $|$ FOSSEE $|$ Indian Institute of Technology Bombay}
+   \fancyfoot[L]{""" + styles.FOOTER_LEFT_TEXT + r"""}
   \fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
   \renewcommand{\footrule}{\vspace{-8pt}\color{osdagGreen}\hrule width\headwidth height 1pt \vspace{6pt}}
 }
 \pagestyle{main}
-\setstretch{1.15}
+\setstretch{""" + styles.LINE_SPACING + r"""}
 
 % Custom Commands
 \newcommand{\placeholder}[1]{\textit{\textless #1\textgreater}}
@@ -594,7 +588,7 @@ class ReportDataBridge:
                 ur = float(val)
                 if ur <= 1.0:
                     return r"\textcolor{black}{PASS}"
-                return r"\textcolor{red}{FAIL}"
+                return r"\textcolor{failRed}{FAIL}"
         except (TypeError, ValueError):
             pass
         return ""
