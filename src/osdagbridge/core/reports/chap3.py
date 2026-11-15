@@ -341,7 +341,7 @@ This section summarizes all loads applied to the bridge and the load combination
 
 \vspace{1em}
 \begin{longtable}{|L{5.5cm}|p{10.0cm}|}
-\caption{\textbf{Dead Load -- Self Weight}}
+\caption{\textbf{Dead Load -- Self Weight}}\\
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
@@ -360,7 +360,7 @@ This section summarizes all loads applied to the bridge and the load combination
 
 \vspace{1em}
 \begin{longtable}{|L{5.5cm}|p{10.0cm}|}
-\caption{\textbf{Dead Load for Surfacing (DW)}}
+\caption{\textbf{Dead Load for Surfacing (DW)}}\\
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
@@ -416,7 +416,7 @@ Centrifugal Force & Not applicable (straight bridge) & --- & IRC 6 Cl. 212 \\[\r
 
 \vspace{1em}
 \begin{longtable}{|L{5.5cm}|p{10.0cm}|}
-\caption{\textbf{Wind Load (WL) --- per IRC 6}}
+\caption{\textbf{Wind Load (WL) --- per IRC 6}}\\
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
@@ -445,7 +445,7 @@ Centrifugal Force & Not applicable (straight bridge) & --- & IRC 6 Cl. 212 \\[\r
 
 \vspace{1em}
 \begin{longtable}{|L{5.5cm}|p{10.0cm}|}
-\caption{\textbf{Earthquake Load (EL) --- per IRC 6}}
+\caption{\textbf{Earthquake Load (EL) --- per IRC 6}}\\
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
@@ -476,7 +476,7 @@ Centrifugal Force & Not applicable (straight bridge) & --- & IRC 6 Cl. 212 \\[\r
 
 \vspace{1em}
 \begin{longtable}{|L{5.5cm}|p{10.0cm}|}
-\caption{\textbf{Temperature Load (TL) --- per IRC 6}}
+\caption{\textbf{Temperature Load (TL) --- per IRC 6}}\\
 \hline
 \textbf{parameter} & \textbf{value} \\
 \hline
@@ -497,7 +497,7 @@ Centrifugal Force & Not applicable (straight bridge) & --- & IRC 6 Cl. 212 \\[\r
 
 \vspace{1em}
 \begin{longtable}{|C{4.0cm}|p{11.5cm}|}
-\caption{\textbf{Load Combinations}}
+\caption{\textbf{Load Combinations}}\\
 \hline
 \textbf{Combination ID} & \textbf{Load Cases} \\[\rowgap]
 \hline
